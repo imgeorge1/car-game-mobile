@@ -226,10 +226,15 @@
       }
 
       function update() {
+        if (score >= 8000) {
+          alert("You Win!");
+        }
         if (gameOver == true) {
           if (alerted === false) {
             //the alert box telling you that game is over and showing your score
-            alert("GAME OVER!\nYour score: " + score);
+            alert("GAME OVER!\nYour score: " +
+                score +
+                "\nyou need to score 8000 to win");
             //setting alerted variable to true so this alert appears only once
             alerted = true;
             //reloading the page after clicking on "ok"
