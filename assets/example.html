@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Mushrooms</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <link rel="icon" type="image/x-icon" href="GAMEimg/sun.png" />
+    <style type="text/css">
+      body {
+        margin: 0;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      //create config
+      var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 200 },
+            debug: false,
+          },
+        },
+
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      //declare variables
+      var player2;
+      var player;
+      var island;
+      var cursors;
+      var keys;
+      var enemy;
+      var score = 0;
+      var scoreText;
+      var gameOver = false;
+      var intervalFunction;
+      var alerted = false;
+      var fallingItems;
+
+      var game = new Phaser.Game(config);
+
+      function preload() {
+        //load images
+        this.load.image("sky", "GAMEimg/sky.png");
+        this.load.image("sun", "GAMEimg/sun.png");
+        this.load.image("cloud1", "GAMEimg/cloud1.png");
+        this.load.image("cloud2", "GAMEimg/cloud2.png");
+        this.load.image("cloud3", "GAMEimg/cloud3.png");
+        this.load.image("cloud4", "GAMEimg/cloud4.png");
+        this.load.image("cloud5", "GAMEimg/cloud5.png");
+        this.load.image("cloud6", "GAMEimg/cloud6.png");
+        this.load.image("cloud7", "GAMEimg/cloud7.png");
+        this.load.image("cloud8", "GAMEimg/cloud8.png");
+        this.load.image("ball", "GAMEimg/enemies/bowlingBall.png");
+        this.load.image("coconut", "GAMEimg/enemies/coconut.png");
+        this.load.image("rock", "GAMEimg/enemies/rock.png");
+        this.load.image("watermelon", "GAMEimg/enemies/watermelon.png");
+
+        this.load.image("island", "GAMEimg/island.png");
+
+        //load characters
+        this.load.spritesheet("tansy", "GAMEimg/tansy.png", {
+          frameWidth: 61,
+          frameHeight: 28,
+        });
+        this.load.spritesheet("blewit", "GAMEimg/blewit.png", {
+          frameWidth: 61,
+          frameHeight: 28,
+        });
+      }
+
+      function create() {
+        //create sprites and images
+        this.add.image(400, 300, "sky");
+        this.add.image(400, 130, "sun").setScale(0.13);
+
+        //click on screen reload
+        // addEventListener("click", reloadFunc);
+
+        // function reloadFunc(){
+        //     location.reload(true);
+        // }
+
+        //make enemy group
+        enemy = this.physics.add.group();
+        fallingItems = ["ball", "coconut", "rock", "watermelon"];
+
+        // v old intervalFunction code v
+        // this.time.addEvent({
+        //     delay: 400,
+        //     callback: ()=>{
+        //         // spawn a new enemy
+        //             for (var i =0; i < 1; i++)
+        //             {
+        //                 enemy.create(Phaser.Math.RND.between(20, 780), 0, Phaser.Math.RND.pick(fallingItems));
+        //             }
+        //     },
+        //     loop: true,
+        // })
+
+        //count score each time an enemy spawns
+        function intervalFunction() {
+          setInterval(function () {
+            enemy.create(
+              Phaser.Math.RND.between(20, 780),
+              0,
+              Phaser.Math.RND.pick(fallingItems)
+            );
+            // if (Phaser.Math.RND.pick(fallingItems) === "ball") {
+            //   score += 10;
+            // }
+            score += 1;
+            scoreText.setText("Score: " + score);
+          }, 400);
+        }
+        intervalFunction();
+        //showing score on screen
+        scoreText = this.add.text(16, 16, "score: 0", {
+          fontSize: "32px",
+          fill: "#000",
+        });
+        scoreText.setDepth(1);
+
+        //add clouds
+        this.add.image(100, 40, "cloud1");
+        this.add.image(250, 40, "cloud2");
+        this.add.image(350, 40, "cloud3");
+        this.add.image(820, 40, "cloud4");
+        this.add.image(580, 40, "cloud3");
+        this.add.image(500, 40, "cloud5");
+        this.add.image(600, 40, "cloud6");
+        this.add.image(800, 40, "cloud6");
+        this.add.image(170, 40, "cloud7");
+        this.add.image(420, 40, "cloud8");
+
+        //create platform
+        island = this.physics.add.staticGroup();
+        island.create(400, 500, "island").setScale(1.65).refreshBody();
+
+        //create player1 and collide with the platform
+        player = this.physics.add.sprite(431, 350, "tansy");
+        this.physics.add.collider(player, island);
+
+        //player1 settings
+        player.setBounce(0.15);
+        player.setCollideWorldBounds(false);
+        //change actual hitbox of player1
+        player.body.setSize(53, 20);
+
+        //create animations for player1
+        this.anims.create({
+          //animation name
+          key: "left",
+          //telling which frames to use from the spritesheet
+          frames: this.anims.generateFrameNumbers("tansy", {
+            start: 0,
+            end: 3,
+          }),
+          //framerate
+          frameRate: 12,
+          //repeat the animation
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "turn",
+          frames: [{ key: "tansy", frame: 4 }],
+          frameRate: 20,
+        });
+        this.anims.create({
+          key: "right",
+          frames: this.anims.generateFrameNumbers("tansy", {
+            start: 5,
+            end: 8,
+          }),
+          frameRate: 15,
+          repeat: 1,
+        });
+        //create input for player 1
+        cursors = this.input.keyboard.createCursorKeys();
+
+        //player2
+
+        //create player2 and collide with platform
+        player2 = this.physics.add.sprite(369, 350, "blewit");
+        this.physics.add.collider(player2, island);
+
+        //player 2 settings
+        player2.setBounce(0.15);
+        player2.setCollideWorldBounds(false);
+        //change the actual hitbox of player2
+        player2.body.setSize(53, 20);
+
+        //create player2 animations
+        this.anims.create({
+          key: "left2",
+          frames: this.anims.generateFrameNumbers("blewit", {
+            start: 0,
+            end: 3,
+          }),
+          frameRate: 12,
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "turn2",
+          frames: [{ key: "blewit", frame: 4 }],
+          frameRate: 20,
+        });
+        this.anims.create({
+          key: "right2",
+          frames: this.anims.generateFrameNumbers("blewit", {
+            start: 5,
+            end: 8,
+          }),
+          frameRate: 12,
+          repeat: 1,
+        });
+        //player2 input (wasd)
+        keys = this.input.keyboard.addKeys("W,A,S,D");
+        //player1 and player2 collision
+        this.physics.add.collider(player, player2);
+        //declaring gamer variable
+        (gamer = player), player2;
+
+        //p1 and p2 collision with enemy and calls hitEnemy function
+        this.physics.add.collider(player, enemy, hitEnemy, null, this);
+        this.physics.add.collider(player2, enemy, hitEnemy, null, this);
+      }
+
+      //update loop
+      function update() {
+        //make alert popup after colliding with enemy
+        if (gameOver == true) {
+          if (alerted === false) {
+            //the alert box telling you that game is over and showing your score
+            alert("GAME OVER!\nYour score: " + score);
+            //setting alerted variable to true so this alert appears only once
+            alerted = true;
+            //reloading the page after clicking on "ok"
+            window.location.reload();
+          }
+        }
+
+        //showing animations for p1
+        if (cursors.left.isDown) {
+          //sets player walking speed and direction
+          player.setVelocityX(-180);
+          //tells which animation to play
+          player.anims.play("left", true);
+        } else if (cursors.right.isDown) {
+          //sets player walking speed and direction
+          player.setVelocityX(180);
+          //tells which animation to play
+          player.anims.play("right", true);
+        } else {
+          //sets player walking speed and direction
+          player.setVelocityX(0);
+          //tells which animation to play
+          player.anims.play("turn");
+        }
+        //jump
+        if (cursors.up.isDown && player.body.touching.down) {
+          player.setVelocityY(-155);
+        }
+
+        //showing animations for p2
+        if (keys.A.isDown) {
+          //sets player walking speed and direction
+          player2.setVelocityX(-180);
+          //tells which animation to play
+          player2.anims.play("left2", true);
+        } else if (keys.D.isDown) {
+          //sets player walking speed and direction
+          player2.setVelocityX(180);
+          //tells which animation to play
+          player2.anims.play("right2", true);
+        } else {
+          //sets player walking speed and direction
+          player2.setVelocityX(0);
+          //tells which animation to play
+          player2.anims.play("turn2");
+        }
+        //jump
+        if (keys.W.isDown && player2.body.touching.down) {
+          player2.setVelocityY(-155);
+        }
+      }
+      //the function which declares that game is over
+      function hitEnemy(gamer, enemy) {
+        gameOver = true;
+      }
+    </script>
+  </body>
+</html>

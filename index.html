@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>car game</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <link rel="icon" type="image/x-icon" href="" />
+    <style type="text/css">
+      body {
+        margin: 0;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      const config = {
+        type: Phaser.AUTO,
+        width: 600,
+        height: 750,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 0 },
+            debug: false,
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      //variables
+      let player;
+      let enemy;
+      let score = 0;
+      let scoreText;
+      var gameOver = false;
+      var alerted = false;
+      let game = new Phaser.Game(config);
+      let details;
+
+      // let carsList;
+      let trucks;
+      let sedans;
+      let compacts;
+      let supercars;
+      let intervalFunction;
+
+      //main functions
+      function preload() {
+        this.load.image("road", "assets/road.png");
+        this.load.image("roadDetails", "assets/road_details.png");
+        //trucks
+        this.load.image("blue-truck", "assets/trucks/blue_truck.png");
+        this.load.image("dark-truck", "assets/trucks/dark_truck.png");
+        this.load.image("limo", "assets/trucks/limo.png");
+        this.load.image("red-truck", "assets/trucks/red_truck.png");
+        this.load.image("yellow-truck", "assets/trucks/yellow_truck.png");
+        //sedans
+        this.load.image("blue-sedan", "assets/sedans/blue_sedan.png");
+        this.load.image("old-sedan", "assets/sedans/old_sedan.png");
+        this.load.image("red-sedan", "assets/sedans/red_sedan.png");
+        this.load.image("taxi", "assets/sedans/taxi.png");
+        this.load.image("white-sedan", "assets/sedans/white_sedan.png");
+        //supercars
+        this.load.image("blue-super", "assets/supercars/blue_super.png");
+        this.load.image("purple-super", "assets/supercars/purple_super.png");
+        this.load.image("red-super", "assets/supercars/red_super.png");
+        this.load.image("stripe-super", "assets/supercars/stripe_super.png");
+        this.load.image("white-super", "assets/supercars/white_super.png");
+        this.load.image("yellow-super", "assets/supercars/yellow_super.png");
+        //compacts
+        this.load.image("blue-compact", "assets/compacts/blue_compact.png");
+        this.load.image("green-compact", "assets/compacts/green_compact.png");
+        this.load.image("violet-compact", "assets/compacts/violet_compact.png");
+        this.load.image("yellow-compact", "assets/compacts/yellow_compact.png");
+
+        this.load.spritesheet("player", "assets/player_car.png", {
+          frameWidth: 34,
+          frameHeight: 64,
+        });
+
+        //arrows
+        this.load.image("ar", "assets/ar.png");
+        this.load.image("au", "assets/au.png");
+        this.load.image("al", "assets/al.png");
+        this.load.image("ad", "assets/ad.png");
+      }
+
+      function create() {
+        //road
+        this.add.image(300, 400, "road");
+        //v creates a tileSprite
+        this.details = this.add.tileSprite(300, 375, 600, 750, "roadDetails");
+        //arrows
+        this.aup = this.add.image(100, 650, "au").setDepth(2);
+        this.aup
+          .setInteractive()
+          .on("pointerdown", () => this.player.setVelocityY(-100))
+          .on("pointerup", () => this.player.setVelocityY(0));
+
+        this.ad = this.add.image(200, 650, "ad").setDepth(2);
+        this.ad
+          .setInteractive()
+          .on("pointerdown", () => this.player.setVelocityY(100))
+          .on("pointerup", () => this.player.setVelocityY(0));
+
+        this.al = this.add.image(380, 650, "al").setDepth(2);
+        this.al
+          .setInteractive()
+          .on("pointerdown", () => this.player.setVelocityX(-250))
+          .on("pointerup", () => this.player.setVelocityX(0));
+
+        this.ar = this.add.image(500, 650, "ar").setDepth(2);
+        this.ar
+          .setInteractive()
+          .on("pointerdown", () => this.player.setVelocityX(250))
+          .on("pointerup", () => this.player.setVelocityX(0));
+
+        //enemies
+        trucks = [
+          "blue-truck",
+          "dark-truck",
+          "limo",
+          "red-truck",
+          "yellow-truck",
+        ];
+        sedans = [
+          "blue-sedan",
+          "old-sedan",
+          "red-sedan",
+          "taxi",
+          "white-sedan",
+        ];
+        supercars = [
+          "blue-super",
+          "purple-super",
+          "red-super",
+          "stripe-super",
+          "white-super",
+          "yellow-super",
+        ];
+        compacts = [
+          "blue-compact",
+          "green-compact",
+          "violet-compact",
+          "yellow-compact",
+        ];
+        enemy = this.physics.add.group();
+        this.physics.add.collider(enemy, enemy);
+
+        scoreText = this.add.text(16, 16, "Score: 0", {
+          fontSize: "20px",
+          fill: "#FF7F27",
+        });
+        scoreText.setDepth(1);
+        function intervalFunction() {
+          setInterval(function () {
+            enemy
+              .create(
+                Phaser.Math.RND.between(10, 590),
+                -500,
+                Phaser.Math.RND.pick(trucks)
+              )
+              .setVelocity(0, 200);
+            score += 20;
+            scoreText.setText("Score: " + score);
+          }, 2200);
+        }
+        function intervalFunction2() {
+          setInterval(function () {
+            enemy
+              .create(
+                Phaser.Math.RND.between(10, 590),
+                -500,
+                Phaser.Math.RND.pick(supercars)
+              )
+              .setVelocity(0, 600);
+            score += 15;
+            scoreText.setText("Score: " + score);
+          }, 1200);
+        }
+        function intervalFunction3() {
+          setInterval(function () {
+            enemy
+              .create(
+                Phaser.Math.RND.between(10, 590),
+                -500,
+                Phaser.Math.RND.pick(compacts)
+              )
+              .setVelocity(0, 300);
+            score += 5;
+            scoreText.setText("Score: " + score);
+          }, 600);
+        }
+        function intervalFunction4() {
+          setInterval(function () {
+            enemy
+              .create(
+                Phaser.Math.RND.between(10, 590),
+                -500,
+                Phaser.Math.RND.pick(sedans)
+              )
+              .setVelocity(0, 400);
+            score += 10;
+            scoreText.setText("Score: " + score);
+          }, 900);
+        }
+        intervalFunction();
+        intervalFunction2();
+        intervalFunction3();
+        intervalFunction4();
+
+        //player
+        this.player = this.physics.add.sprite(300, 500, "player");
+        gamer = this.player;
+        gamer.body.setSize(26, 60);
+        //player settings
+        this.player.setCollideWorldBounds(true);
+        //input
+        this.physics.add.collider(gamer, enemy, hitEnemy, null, this);
+      }
+
+      function update() {
+        if (gameOver == true) {
+          if (alerted === false) {
+            //the alert box telling you that game is over and showing your score
+            alert("GAME OVER!\nYour score: " + score);
+            //setting alerted variable to true so this alert appears only once
+            alerted = true;
+            //reloading the page after clicking on "ok"
+            window.location.reload();
+          }
+        }
+        //v animates the tileSprite
+        this.details.tilePositionY -= 3;
+
+        // this.input.on("pointerdown", this.player.setVelocityX(-250))
+      }
+      function hitEnemy(player, enemy) {
+        gameOver = true;
+      }
+    </script>
+  </body>
+</html>
