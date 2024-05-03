@@ -17,8 +17,8 @@
     <script type="text/javascript">
       const config = {
         type: Phaser.AUTO,
-        width: 600,
-        height: 750,
+        width: window.innerWidth,
+        height: window.innerHeight,
         physics: {
           default: "arcade",
           arcade: {
@@ -121,6 +121,7 @@
           .on("pointerdown", () => this.player.setVelocityX(250))
           .on("pointerup", () => this.player.setVelocityX(0));
 
+        // this.input.on("pointerdown", () => );
         //enemies
         trucks = [
           "blue-truck",
@@ -232,9 +233,11 @@
         if (gameOver == true) {
           if (alerted === false) {
             //the alert box telling you that game is over and showing your score
-            alert("GAME OVER!\nYour score: " +
+            alert(
+              "GAME OVER!\nYour score: " +
                 score +
-                "\nyou need to score 8000 to win");
+                "\nyou need to score 8000 to win"
+            );
             //setting alerted variable to true so this alert appears only once
             alerted = true;
             //reloading the page after clicking on "ok"
